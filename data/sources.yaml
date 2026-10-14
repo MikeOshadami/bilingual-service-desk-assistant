@@ -1,0 +1,94 @@
+# Knowledge sources for the assistant.
+# Public pages are published Government of New Brunswick information. Staff sources are local files that only
+# authenticated users with the "staff" role can retrieve.
+# After editing this file, reload with:  POST /api/ingest/sources   (or delete the vector_store rows and restart)
+sources:
+  # ---- English, public ----
+  - id: driver-licences-en
+    title: Driver's licences
+    url: https://www.gnb.ca/en/topic/driving-transportation/driving-licensing/driver-licences.html
+    lang: en
+    audience: public
+    topic: driver-licences
+  - id: new-residents-en
+    title: Driver's licences for new residents
+    url: https://www.gnb.ca/en/topic/driving-transportation/driving-licensing/licences-new-residents.html
+    lang: en
+    audience: public
+    topic: driver-licences
+  - id: id-documents-en
+    title: Acceptable identification documents
+    url: https://www.gnb.ca/en/topic/driving-transportation/driving-licensing/driver-licences/id-docs.html
+    lang: en
+    audience: public
+    topic: driver-licences
+  - id: proof-of-residency-en
+    title: Acceptable proof of New Brunswick residency
+    url: https://www.gnb.ca/en/topic/driving-transportation/driving-licensing/driver-licences/proof.html
+    lang: en
+    audience: public
+    topic: driver-licences
+  - id: graduated-licences-en
+    title: Graduated licensing
+    url: https://www.gnb.ca/en/topic/driving-transportation/driving-licensing/graduated-licences.html
+    lang: en
+    audience: public
+    topic: driver-licences
+  - id: photo-id-en
+    title: Photo identification card
+    url: https://www.gnb.ca/en/topic/driving-transportation/driving-licensing/photo-id.html
+    lang: en
+    audience: public
+    topic: photo-id
+  - id: vehicle-registration-en
+    title: Motor vehicle registration
+    url: https://www.gnb.ca/en/topic/driving-transportation/registration-inspection/motor-vehicle-registration.html
+    lang: en
+    audience: public
+    topic: vehicle-registration
+  - id: vehicle-inspections-en
+    title: Motor vehicle inspections
+    url: https://www.gnb.ca/en/topic/driving-transportation/registration-inspection/motor-vehicle-inspections.html
+    lang: en
+    audience: public
+    topic: vehicle-registration
+
+  # ---- French, public ----
+  - id: driver-licences-fr
+    title: Permis de conduire
+    url: https://www.gnb.ca/fr/sujet/conduite-transports/permis-conduire/permis-conduire.html
+    lang: fr
+    audience: public
+    topic: driver-licences
+  - id: new-residents-fr
+    title: Permis de conduire pour les nouveaux résidents
+    url: https://www.gnb.ca/fr/sujet/conduite-transports/permis-conduire/permis-nouveaux-residents.html
+    lang: fr
+    audience: public
+    topic: driver-licences
+  - id: graduated-licences-fr
+    title: Permis progressifs
+    url: https://www.gnb.ca/fr/sujet/conduite-transports/permis-conduire/permis-progressifs.html
+    lang: fr
+    audience: public
+    topic: driver-licences
+  - id: photo-id-fr
+    title: Cartes d'identité avec photo
+    url: https://www.gnb.ca/fr/sujet/conduite-transports/permis-conduire/cartes-identite.html
+    lang: fr
+    audience: public
+    topic: photo-id
+  - id: vehicle-registration-fr
+    title: Immatriculer son véhicule
+    url: https://www.gnb.ca/fr/sujet/conduite-transports/immatriculation-inspection/immatriculer-son-vehicule.html
+    lang: fr
+    audience: public
+    topic: vehicle-registration
+
+  # ---- Staff only (fictional sample procedure, used to demonstrate role-aware retrieval) ----
+  - id: escalation-procedure-staff
+    title: Service desk escalation procedure (sample, fictional)
+    path: data/internal/escalation-procedure.md
+    lang: en
+    audience: staff
+    topic: internal-procedures

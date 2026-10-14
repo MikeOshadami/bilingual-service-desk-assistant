@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Service Desk Assistant</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header class="top">
+    <div class="wrap top-inner">
+      <div>
+        <p class="eyebrow" data-i18n="eyebrow">Unofficial demo · runs on local models</p>
+        <h1 data-i18n="title">Service Desk Assistant</h1>
+      </div>
+      <div class="lang" role="group" aria-label="Language / Langue">
+        <button type="button" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="fr" aria-pressed="false">Français</button>
+      </div>
+    </div>
+    <nav class="wrap tabs" role="tablist">
+      <button role="tab" id="tab-ask" aria-controls="panel-ask" aria-selected="true" data-i18n="tabAsk">Ask a question</button>
+      <button role="tab" id="tab-submit" aria-controls="panel-submit" aria-selected="false" data-i18n="tabSubmit">Submit a request</button>
+    </nav>
+  </header>
+
+  <main id="main" class="wrap">
+    <section id="panel-ask" role="tabpanel" aria-labelledby="tab-ask">
+      <form id="ask-form" class="card">
+        <label for="question" data-i18n="askLabel">Ask about driver's licences, photo ID or vehicle registration</label>
+        <textarea id="question" rows="3" maxlength="2000" required></textarea>
+        <div class="row">
+          <div class="examples" id="examples"></div>
+          <button type="submit" class="primary" data-i18n="askButton">Ask</button>
+        </div>
+      </form>
+      <div id="ask-result" aria-live="polite"></div>
+    </section>
+
+    <section id="panel-submit" role="tabpanel" aria-labelledby="tab-submit" hidden>
+      <form id="submit-form" class="card">
+        <label for="request-text" data-i18n="submitLabel">Paste an email or letter, or upload a document</label>
+        <textarea id="request-text" rows="7" maxlength="20000"></textarea>
+        <div class="row">
+          <label class="file"><span data-i18n="upload">Upload PDF, Word or text</span>
+            <input type="file" id="request-file" accept=".pdf,.doc,.docx,.txt,.md,.html">
+          </label>
+          <button type="submit" class="primary" data-i18n="submitButton">Process request</button>
+        </div>
+      </form>
+      <div id="submit-result" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <p data-i18n="footer">Portfolio project. Not affiliated with or endorsed by the Government of New Brunswick. Answers come only from published public pages and may be out of date: always confirm with Service New Brunswick.</p>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>

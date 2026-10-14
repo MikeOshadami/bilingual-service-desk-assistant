@@ -1,0 +1,87 @@
+spring:
+  application:
+    name: bilingual-service-desk-assistant
+  threads:
+    virtual:
+      enabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/servicedesk}
+    username: ${DB_USER:servicedesk}
+    password: ${DB_PASSWORD:servicedesk}
+  sql:
+    init:
+      mode: always
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      init:
+        # Pull the models on first start if they are not already in Ollama.
+        pull-model-strategy: when_missing
+        timeout: 15m
+      chat:
+        options:
+          model: ${OLLAMA_CHAT_MODEL:qwen2.5:7b}
+          temperature: 0.1
+          num-ctx: 8192
+          # Hard cap on generated tokens: small models can loop, especially in French.
+          num-predict: 450
+          repeat-penalty: 1.15
+      embedding:
+        options:
+          # bge-m3 is multilingual, so French questions match English sources and vice versa.
+          model: ${OLLAMA_EMBEDDING_MODEL:bge-m3}
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 1024
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${KEYCLOAK_JWKS_URI:http://localhost:8081/realms/servicedesk/protocol/openid-connect/certs}
+
+app:
+  rag:
+    top-k: 5
+    similarity-threshold: ${RAG_SIMILARITY_THRESHOLD:0.45}
+    max-answer-words: 180
+  ingest:
+    sources-file: ${SOURCES_FILE:data/sources.yaml}
+    on-startup: ${INGEST_ON_STARTUP:true}
+    chunk-size-tokens: 400
+  security:
+    enabled: ${SECURITY_ENABLED:false}
+    expected-issuer: ${KEYCLOAK_ISSUER:http://localhost:8081/realms/servicedesk}
+  case-api:
+    base-url: ${CASE_API_BASE_URL:http://localhost:8080/mock-case}
+  extraction:
+    max-input-chars: 12000
+    review-confidence-threshold: 0.6
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: always
+      # Liveness and readiness groups outside Kubernetes too (used by the Docker healthcheck).
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  observations:
+    key-values:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    ca.oshadami.servicedesk: INFO

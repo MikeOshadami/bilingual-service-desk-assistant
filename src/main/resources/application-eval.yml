@@ -1,0 +1,7 @@
+# Evaluation profile: no web server, no startup ingestion (run the app once first to load sources).
+spring:
+  main:
+    web-application-type: none
+app:
+  ingest:
+    on-startup: false

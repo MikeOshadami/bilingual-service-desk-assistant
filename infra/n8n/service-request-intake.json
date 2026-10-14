@@ -1,0 +1,101 @@
+{
+  "name": "Service request intake",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "service-request",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "6f3c2a10-0001-4c7e-9a01-000000000001",
+      "name": "Incoming request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "6f3c2a10-0001-4c7e-9a01-0000000000aa"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8080/api/requests",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.body.text, channel: 'n8n-webhook' }) }}",
+        "options": { "timeout": 300000 }
+      },
+      "id": "6f3c2a10-0002-4c7e-9a01-000000000002",
+      "name": "Triage with local AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 0]
+    },
+    {
+      "parameters": { "options": {} },
+      "id": "6f3c2a10-0003-4c7e-9a01-000000000003",
+      "name": "Return case to caller",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [480, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "id": "6f3c2a10-0004-4c7e-9a01-0000000000c1",
+              "leftValue": "={{ $json.needsHumanReview }}",
+              "rightValue": "",
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6f3c2a10-0004-4c7e-9a01-000000000004",
+      "name": "Needs human review?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [720, 0]
+    },
+    {
+      "parameters": {
+        "fromEmail": "assistant@servicedesk.local",
+        "toEmail": "={{ $json.queue }}@servicedesk.local",
+        "subject": "={{ '[' + $json.priority + '] Review needed: ' + $json.caseId + ' (' + $json.extraction.requestType + ')' }}",
+        "emailFormat": "text",
+        "text": "={{ 'Case ' + $json.caseId + ' was routed to ' + $json.queue + ' and needs a person to review it.\\n\\nWhy: ' + $json.reviewReasons.join('; ') + '\\n\\nSummary: ' + $json.extraction.summary + '\\n\\nDraft reply (check before sending):\\n' + ($json.draftReply || '(none)') }}",
+        "options": {}
+      },
+      "id": "6f3c2a10-0005-4c7e-9a01-000000000005",
+      "name": "Notify review queue",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [960, -100]
+    },
+    {
+      "parameters": {},
+      "id": "6f3c2a10-0006-4c7e-9a01-000000000006",
+      "name": "Ready for agent",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [960, 100]
+    }
+  ],
+  "connections": {
+    "Incoming request": { "main": [[{ "node": "Triage with local AI", "type": "main", "index": 0 }]] },
+    "Triage with local AI": { "main": [[{ "node": "Return case to caller", "type": "main", "index": 0 }]] },
+    "Return case to caller": { "main": [[{ "node": "Needs human review?", "type": "main", "index": 0 }]] },
+    "Needs human review?": {
+      "main": [
+        [{ "node": "Notify review queue", "type": "main", "index": 0 }],
+        [{ "node": "Ready for agent", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "active": false
+}

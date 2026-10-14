@@ -1,0 +1,96 @@
+name: service-desk-assistant
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: servicedesk
+      POSTGRES_USER: servicedesk
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-servicedesk}
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U servicedesk -d servicedesk"]
+      interval: 5s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      postgres: { condition: service_healthy }
+      keycloak: { condition: service_started }
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/servicedesk
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-servicedesk}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-qwen2.5:7b}
+      OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL:-bge-m3}
+      SECURITY_ENABLED: ${SECURITY_ENABLED:-true}
+      # Keys are fetched inside the Docker network; tokens are issued to the browser-facing URL.
+      KEYCLOAK_JWKS_URI: http://keycloak:8080/realms/servicedesk/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER: http://localhost:8081/realms/servicedesk
+      CASE_API_BASE_URL: http://localhost:8080/mock-case
+      SOURCES_FILE: /app/data/sources.yaml
+    volumes:
+      - ./data:/app/data:ro
+      - ./eval:/app/eval
+    ports: ["8080:8080"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HOSTNAME: http://localhost:8081
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports: ["8081:8080"]
+    volumes: [./infra/keycloak:/opt/keycloak/data/import:ro]
+
+  n8n:
+    image: n8nio/n8n:2.43.5
+    environment:
+      N8N_SECURE_COOKIE: "false"
+      GENERIC_TIMEZONE: America/Moncton
+      TZ: America/Moncton
+      N8N_DIAGNOSTICS_ENABLED: "false"
+    ports: ["5678:5678"]
+    volumes:
+      - n8ndata:/home/node/.n8n
+      - ./infra/n8n:/workflows:ro
+
+  mailpit:
+    image: axllent/mailpit:v1.31
+    ports: ["8025:8025", "1025:1025"]
+
+  prometheus:
+    image: prom/prometheus:v3.6.0
+    volumes: [./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro]
+    ports: ["9090:9090"]
+
+  grafana:
+    image: grafana/grafana:12.2.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["3000:3000"]
+    depends_on: [prometheus]
+
+  # Optional: run Ollama in Docker instead of natively (CPU only on a Mac, so much slower).
+  #   docker compose --profile ollama up -d  and set OLLAMA_BASE_URL=http://ollama:11434
+  ollama:
+    image: ollama/ollama:0.12.6
+    profiles: ["ollama"]
+    ports: ["11434:11434"]
+    volumes: [ollama:/root/.ollama]
+
+volumes:
+  pgdata:
+  n8ndata:
+  ollama:

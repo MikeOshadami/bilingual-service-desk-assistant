@@ -1,0 +1,47 @@
+{
+  "realm": "servicedesk",
+  "enabled": true,
+  "displayName": "Service Desk Assistant (demo)",
+  "sslRequired": "none",
+  "accessTokenLifespan": 900,
+  "roles": {
+    "realm": [
+      { "name": "staff", "description": "Service desk staff: can read internal procedures, view cases and audit, and reload sources" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "servicedesk-cli",
+      "name": "Service desk demo client",
+      "description": "Public client for local testing with the password grant. Do not use this grant in production.",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:8080/*"],
+      "webOrigins": ["http://localhost:8080"]
+    }
+  ],
+  "users": [
+    {
+      "username": "staff.demo",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Staff",
+      "lastName": "Demo",
+      "email": "staff.demo@example.com",
+      "credentials": [{ "type": "password", "value": "staff-demo-pass", "temporary": false }],
+      "realmRoles": ["staff", "default-roles-servicedesk"]
+    },
+    {
+      "username": "public.demo",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Public",
+      "lastName": "Demo",
+      "email": "public.demo@example.com",
+      "credentials": [{ "type": "password", "value": "public-demo-pass", "temporary": false }],
+      "realmRoles": ["default-roles-servicedesk"]
+    }
+  ]
+}
